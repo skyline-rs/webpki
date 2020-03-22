@@ -36,23 +36,23 @@ use core;
 /// [RFC 5280 Section 7.2]: https://tools.ietf.org/html/rfc5280#section-7.2
 #[cfg(feature = "std")]
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct DNSName(String);
+pub struct DnsName(String);
 
 #[cfg(feature = "std")]
-impl DNSName {
+impl DnsName {
     /// Returns a `DNSNameRef` that refers to this `DNSName`.
-    pub fn as_ref(&self) -> DNSNameRef { DNSNameRef(self.0.as_bytes()) }
+    pub fn as_ref(&self) -> DnsNameRef { DnsNameRef(self.0.as_bytes()) }
 }
 
 #[cfg(feature = "std")]
-impl AsRef<str> for DNSName {
+impl AsRef<str> for DnsName {
     fn as_ref(&self) -> &str { self.0.as_ref() }
 }
 
 // Deprecated
 #[cfg(feature = "std")]
-impl From<DNSNameRef<'_>> for DNSName {
-    fn from(dns_name: DNSNameRef) -> Self { dns_name.to_owned() }
+impl From<DnsNameRef<'_>> for DnsName {
+    fn from(dns_name: DnsNameRef) -> Self { dns_name.to_owned() }
 }
 
 /// A reference to a DNS Name suitable for use in the TLS Server Name Indication
@@ -69,26 +69,26 @@ impl From<DNSNameRef<'_>> for DNSName {
 ///
 /// [RFC 5280 Section 7.2]: https://tools.ietf.org/html/rfc5280#section-7.2
 #[derive(Clone, Copy)]
-pub struct DNSNameRef<'a>(&'a [u8]);
+pub struct DnsNameRef<'a>(&'a [u8]);
 
 /// An error indicating that a `DNSNameRef` could not built because the input
 /// is not a syntactically-valid DNS Name.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct InvalidDNSNameError;
+pub struct InvalidDnsNameError;
 
-impl core::fmt::Display for InvalidDNSNameError {
+impl core::fmt::Display for InvalidDnsNameError {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result { write!(f, "{:?}", self) }
 }
 
 #[cfg(feature = "std")]
-impl ::std::error::Error for InvalidDNSNameError {}
+impl ::std::error::Error for InvalidDnsNameError {}
 
-impl<'a> DNSNameRef<'a> {
+impl<'a> DnsNameRef<'a> {
     /// Constructs a `DNSNameRef` from the given input if the input is a
     /// syntactically-valid DNS name.
-    pub fn try_from_ascii(dns_name: &'a [u8]) -> Result<Self, InvalidDNSNameError> {
+    pub fn try_from_ascii(dns_name: &'a [u8]) -> Result<Self, InvalidDnsNameError> {
         if !is_valid_reference_dns_id(untrusted::Input::from(dns_name)) {
-            return Err(InvalidDNSNameError);
+            return Err(InvalidDnsNameError);
         }
 
         Ok(Self(dns_name))
@@ -96,30 +96,30 @@ impl<'a> DNSNameRef<'a> {
 
     /// Constructs a `DNSNameRef` from the given input if the input is a
     /// syntactically-valid DNS name.
-    pub fn try_from_ascii_str(dns_name: &'a str) -> Result<Self, InvalidDNSNameError> {
+    pub fn try_from_ascii_str(dns_name: &'a str) -> Result<Self, InvalidDnsNameError> {
         Self::try_from_ascii(dns_name.as_bytes())
     }
 
     /// Constructs a `DNSName` from this `DNSNameRef`
     #[cfg(feature = "std")]
-    pub fn to_owned(&self) -> DNSName {
+    pub fn to_owned(&self) -> DnsName {
         // DNSNameRef is already guaranteed to be valid ASCII, which is a
         // subset of UTF-8.
         let s: &str = self.clone().into();
-        DNSName(s.to_ascii_lowercase())
+        DnsName(s.to_ascii_lowercase())
     }
 }
 
 #[cfg(feature = "std")]
-impl core::fmt::Debug for DNSNameRef<'_> {
+impl core::fmt::Debug for DnsNameRef<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> Result<(), core::fmt::Error> {
         let lowercase = self.clone().to_owned();
         f.debug_tuple("DNSNameRef").field(&lowercase.0).finish()
     }
 }
 
-impl<'a> From<DNSNameRef<'a>> for &'a str {
-    fn from(DNSNameRef(d): DNSNameRef<'a>) -> Self {
+impl<'a> From<DnsNameRef<'a>> for &'a str {
+    fn from(DnsNameRef(d): DnsNameRef<'a>) -> Self {
         // The unwrap won't fail because DNSNameRefs are guaranteed to be ASCII
         // and ASCII is a subset of UTF-8.
         core::str::from_utf8(d).unwrap()
@@ -127,7 +127,7 @@ impl<'a> From<DNSNameRef<'a>> for &'a str {
 }
 
 pub fn verify_cert_dns_name(
-    cert: &super::EndEntityCert, DNSNameRef(dns_name): DNSNameRef,
+    cert: &super::EndEntityCert, DnsNameRef(dns_name): DnsNameRef,
 ) -> Result<(), Error> {
     let cert = &cert.inner;
     let dns_name = untrusted::Input::from(dns_name);
