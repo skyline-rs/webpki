@@ -31,6 +31,16 @@ pub struct DnsName<B>(B)
 where
     B: AsRef<[u8]>;
 
+/// A borrowed `DnsName`.
+///
+/// This is an alias for `DnsName<&'a [u8]>`.
+pub type DnsNameRef<'a> = DnsName<&'a [u8]>;
+
+/// An owned `DnsName`
+///
+/// This is an alias for `DnsName<Box<[u8]>>`.
+pub type DnsNameBox = DnsName<Box<[u8]>>;
+
 /// An error indicating that a `DnsName` could not built because the input
 /// is not a syntactically-valid DNS Name.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -47,6 +57,13 @@ impl<B> DnsName<B>
 where
     B: AsRef<[u8]>,
 {
+    /// TODO: docs
+    pub fn try_from_punycode_str<'a>(dns_name: &'a str) -> Result<Self, InvalidDnsNameError>
+        where B: From<&'a [u8]>
+    {
+        Self::try_from_punycode(dns_name.as_ref())
+    }
+
     /// Constructs a `DnsName` from the given input if the input is a
     /// syntactically-valid DNS name.
     pub fn try_from_punycode<A>(dns_name: A) -> Result<Self, InvalidDnsNameError>
@@ -67,6 +84,12 @@ where
     /// underlying representation to reduce monomorphization overhead.
     #[inline]
     pub fn borrow(&self) -> DnsName<&[u8]> { DnsName(self.0.as_ref()) }
+
+    /// TODO:
+    #[cfg(feature = "std")]
+    pub fn to_owned(&self) -> DnsName<Box<[u8]>> {
+        DnsName(Box::from(self.0.as_ref()))
+    }
 
     /// Returns an iterator of the punycode characters of the DNS name, as
     /// bytes.
@@ -102,6 +125,8 @@ where
 {
     fn clone(&self) -> Self { Self(self.0.clone()) }
 }
+
+impl<B> Copy for DnsName<B> where B: AsRef<[u8]> + Copy { }
 
 impl<B> core::fmt::Debug for DnsName<B>
 where

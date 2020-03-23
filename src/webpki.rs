@@ -26,7 +26,6 @@
 #![deny(unused_qualifications)]
 #![forbid(
     anonymous_parameters,
-    box_pointers,
     missing_copy_implementations,
     missing_docs,
     trivial_casts,
@@ -60,7 +59,7 @@ pub mod trust_anchor_util;
 mod verify_cert;
 
 pub use error::Error;
-pub use name::{DnsName, InvalidDnsNameError};
+pub use name::{DnsName, DnsNameBox, DnsNameRef, InvalidDnsNameError};
 
 pub use signed_data::{
     SignatureAlgorithm, ECDSA_P256_SHA256, ECDSA_P256_SHA384, ECDSA_P384_SHA256, ECDSA_P384_SHA384,
