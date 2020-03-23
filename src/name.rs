@@ -36,9 +36,10 @@ where
 /// This is an alias for `DnsName<&'a [u8]>`.
 pub type DnsNameRef<'a> = DnsName<&'a [u8]>;
 
-/// An owned `DnsName`
+/// An owned `DnsName`.
 ///
 /// This is an alias for `DnsName<Box<[u8]>>`.
+#[cfg(feature = "std")]
 pub type DnsNameBox = DnsName<Box<[u8]>>;
 
 /// An error indicating that a `DnsName` could not built because the input
@@ -126,10 +127,9 @@ impl<B> DnsName<B>
     /// `ExactSizeIterator` and `DoubleEndedIterator`.
     ///
     /// ```
-    /// # #![cfg(feature = "std")]
-    /// # use std::string::String;
-    /// use std::iter::FromIterator;
+    /// # #[cfg(feature = "std")]
     /// fn string_from_dns_name<B>(dns_name: webpki::DnsName<B>) -> String where B: AsRef<[u8]> {
+    ///     use std::iter::FromIterator;
     ///     String::from_iter(dns_name.punycode_lowercase_bytes().map(char::from))
     /// }
     /// ```

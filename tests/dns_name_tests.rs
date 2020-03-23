@@ -1,6 +1,6 @@
 // Copyright 2014-2017 Brian Smith.
 
-use webpki::{DnsName, DnsNameRef, DnsNameBox};
+use webpki::{DnsName, DnsNameRef};
 
 // (name, is_valid)
 static DNS_NAME_VALIDITY: &[(&[u8], bool)] = &[
@@ -484,6 +484,8 @@ fn test_dns_name_eq_case() {
 #[cfg(feature = "std")]
 #[test]
 fn test_dns_name_eq_various_types() {
+    use webpki::DnsNameBox;
+
     for (expected_lowercase, input) in DNS_NAME_LOWERCASE_TEST_CASES {
         let a: DnsNameRef = DnsName::try_from_punycode(*expected_lowercase).unwrap();
         let b: DnsNameBox = DnsName::try_from_punycode(*input).unwrap().into_owned();
